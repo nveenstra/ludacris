@@ -1,11 +1,11 @@
 # LudaCRIS — Toward a 4th Generation of Research Information Systems
 
-In the current political and economic climate, many universities are re-evaluating their approach to digital autonomy and sovereignty. Current Research Information Systems (CRIS) systems in conjunction with repositories were mainly used as standalone tools to track research results. In recent years the need arose to integrate these systems into the Business Intelligence (BI) infrastructure in order to monitor research progress. 
+The landscape in which research information systems operate is rapidly changing. Current Research Information Systems (CRIS) systems in conjunction with repositories were mainly used as standalone tools to track research results. In recent years the need arose to integrate these systems into the Business Intelligence (BI) infrastructure in order to monitor research progress. 
 
-At the same time, the rapid rise of AI-assisted workflows offers new opportunities to reduce the workload for researchers, analysts, and developers who use, build and maintain these systems. Existing commercial solutions are struggling to keep pace with this shift — both in terms of data complexity and openness. Reporting and showcasing functionality is shifting from the CRIS system to more suitable systems and even AI interfaces. This requires a rethink of the current landscape and a better infrastructure / platform to adapt to the fast changing world of research information management.
+At the same time, the rapid rise of AI-assisted workflows offers new opportunities to reduce the workload for researchers, analysts, and developers who use, build and maintain these systems. Existing commercial solutions are struggling to keep pace with this shift — both in terms of data complexity and openness. Reporting and showcasing functionality is shifting from the CRIS system to more suitable systems and even AI interfaces. This requires a rethink of the current landscape and a better infrastructure / platform to adapt to the fast changing world of research information management. In the current political and economic climate, many universities are also re-evaluating their approach to digital autonomy and sovereignty. 
 
 LudaCRIS aims to demonstrate a modern, AI-ready alternative:
-a modular, open-source architecture designed to provide all core CRIS and BI functionality while enabling intelligent search, matching, classification and reasoning.
+a modular, open-source architecture designed to provide all core CRIS and BI functionality while enabling automated ingestion of new data, intelligent search, matching, classification and reasoning.
 
 
 
