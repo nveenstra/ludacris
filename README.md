@@ -213,6 +213,6 @@ flowchart TB
   class Lake,Fulltext,Graph store;
   class Core,LLM,RAGAPI,APIE,MCPN,OS,NEO svc;
   class Bus bus;
-
+```
 
 This project is aimed at delivering a proof of concept. I am working on this in my spare time, so it will take some time. Interested in collaborating / brainstorming? DM me on linkedin. 
