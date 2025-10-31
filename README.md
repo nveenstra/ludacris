@@ -7,6 +7,8 @@ At the same time, the rapid rise of AI-assisted workflows offers new opportuniti
 LudaCRIS aims to demonstrate a modern, AI-ready alternative:
 a modular, open-source architecture designed to provide all core CRIS and BI functionality while enabling intelligent search, matching, classification and reasoning.
 
+
+
 ### Evolution of CRIS Generations (Context)
 
 | Generation | Era | Characteristics | Examples / Technologies |
@@ -20,6 +22,8 @@ LudaCRIS can be seen as a fourth-generation CRIS system, designed for the era of
 It builds upon open standards and institutional autonomy, extending the traditional CRIS model with vectorized data, knowledge graphs, and locally hosted AI components for reasoning and automation.
 Where earlier CRIS systems focused on metadata aggregation and reporting, LudaCRIS enables semantic understanding, contextual discovery, and AI-assisted research information management.
 
+
+
 ### Project Goals
 	•	AI-First — importing, deduplication, semantic search, classification, reasoning, and automation are built in, not bolted on.
 	•	Open Source Only — no proprietary dependencies or cloud lock-in.
@@ -27,6 +31,7 @@ Where earlier CRIS systems focused on metadata aggregation and reporting, LudaCR
 	•	Extensible and Adaptable — modular architecture that grows with your needs.
 	•	Chat only interface — reduce the overhead of front-end development changes and focus on AI interaction for queries, visualisations and data import- and export.
 	
+
 
 ### Architecture Overview
 
@@ -44,6 +49,8 @@ The system is designed around the principles of transparency, extensibility, and
 At its core, it combines a PostgreSQL + pgvector lakehouse, a Neo4j knowledge graph, and OpenSearch for hybrid retrieval.
 A RAG service orchestrates semantic retrieval and generation using locally hosted LLMs (Ollama or vLLM).
 
+
+
 ### Core Layers
 
 | Layer | Purpose | Technologies |
@@ -59,6 +66,7 @@ A RAG service orchestrates semantic retrieval and generation using locally hoste
 | **Full-Text Storage** | Hybrid keyword and semantic search for documents and metadata. | OpenSearch |
 | **RAG Service** | Combines retrieval from the Lakehouse, Graph, and Search layers for grounded generation. | FastAPI, sentence-transformers, Ollama |
 | **User Interface** | Dashboards and conversational UI for researchers and analysts. | OpenSearch Dashboards, LibreChat |
+
 
 
 ### Technology Stack Summary
@@ -82,6 +90,7 @@ A RAG service orchestrates semantic retrieval and generation using locally hoste
 | **Version Control** | Repository and collaboration. | GitHub |
 
 
+
 ### Chat only interface
 
 Developing a modern frontend for this system would mean considerable development time and maintenance in order to adapt to new standards and functionality. At the same time users are rapidly adapting to using AI bot chats to retrieve information. So rather than going into the complexity of designing and maintaining a user interface suited for multiple platforms and devices, LudaCRIS relies on a chat interface that can be used for all tasks required. 
@@ -95,6 +104,8 @@ Developing a modern frontend for this system would mean considerable development
 | **Tool calling / API integration** | Lets the chat interface trigger backend actions such as “create record” or “update metadata.” |
 | **Authentication / roles** | Restricts sensitive actions to authorized users (e.g., librarians, admins). |
 | **Local + open source** | Ensures full institutional data sovereignty and offline capability—no cloud dependencies. |
+
+
 
 ### Flow architecture
 
