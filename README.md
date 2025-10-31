@@ -215,4 +215,4 @@ flowchart TB
   class Bus bus;
 
 
-This project is aimed at delivering a proof of concept. I am working on this in my spare time, so it will take some time. Interested in collaborating? DM me. 
+This project is aimed at delivering a proof of concept. I am working on this in my spare time, so it will take some time. Interested in collaborating / brainstorming? DM me on linkedin. 
