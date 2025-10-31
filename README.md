@@ -1,4 +1,4 @@
-# LudaCRIS — An Open, AI-First CRIS System
+# LudaCRIS — Toward a 4th Generation of Research Information Systems
 
 In the current political and economic climate, many universities are re-evaluating their approach to digital autonomy and sovereignty. Current Research Information Systems (CRIS) systems in conjunction with repositories were mainly used as standalone tools to track research results. In recent years the need arose to integrate these systems into the Business Intelligence (BI) infrastructure in order to monitor research progress. 
 
@@ -7,15 +7,33 @@ At the same time, the rapid rise of AI-assisted workflows offers new opportuniti
 LudaCRIS aims to demonstrate a modern, AI-ready alternative:
 a modular, open-source architecture designed to provide all core CRIS and BI functionality while enabling intelligent search, matching, classification and reasoning.
 
+### Evolution of CRIS Generations (Context)
+
+| Generation | Era | Characteristics | Examples / Technologies |
+|:------------|:----|:----------------|:-------------------------|
+| **1st Gen — Administrative CRIS** | 1980s–1990s | Institutional record-keeping; closed databases; manually curated; limited interoperability. | In-house systems, Oracle DBs, Excel-based tracking. |
+| **2nd Gen — Integrated CRIS** | 2000s–2010s | Commercial, monolithic platforms; metadata aggregation; integration with repositories; reporting and compliance focus. | Pure, Converis, Symplectic Elements. |
+| **3rd Gen — Open & Interoperable CRIS** | 2010s–2020s | Open standards (CERIF, RIOXX, Schema.org); APIs; interoperability with repositories and funders; partial open-source ecosystems. | DSpace-CRIS, openCRIS initiatives, VIVO. |
+| **4th Gen — Data Intelligence CRIS** | Emerging 2020s | AI-assisted, event-driven, graph-oriented architectures; open and locally hostable; built around embeddings, reasoning, and automation. | → **LudaCRIS** |
+
+LudaCRIS can be seen as a fourth-generation CRIS system, designed for the era of data intelligence and digital sovereignty.
+It builds upon open standards and institutional autonomy, extending the traditional CRIS model with vectorized data, knowledge graphs, and locally hosted AI components for reasoning and automation.
+Where earlier CRIS systems focused on metadata aggregation and reporting, LudaCRIS enables semantic understanding, contextual discovery, and AI-assisted research information management.
+
 ### Project Goals
 	•	AI-First — importing, deduplication, semantic search, classification, reasoning, and automation are built in, not bolted on.
 	•	Open Source Only — no proprietary dependencies or cloud lock-in.
 	•	Locally Hosted — fully deployable on-premises for institutional sovereignty.
 	•	Extensible and Adaptable — modular architecture that grows with your needs.
 
-![Ludacris architecture](https://github.com/nveenstra/ludacris/blob/main/Ludacris.png)
-
 ### Architecture Overview
+
+The figure below illustrates the modular LudaCRIS architecture.
+Data flows from the ingest layer through orchestrated Prefect pipelines into the Lakehouse, where versioned records are stored and embedded.
+CDC events are propagated via Redpanda to update the Knowledge Graph, Full-Text index, and LLM embeddings.
+A Retrieval-Augmented Generation (RAG) service unifies these components, enabling natural-language reasoning over verified institutional data sources.
+
+![Ludacris architecture](https://github.com/nveenstra/ludacris/blob/main/Ludacris.png)
 
 LudaCRIS is built as a modular, Docker-based architecture composed entirely of open-source and self-hostable components.
 Each layer has a clear responsibility — from ingesting external data sources to reasoning over research information using AI.
@@ -27,35 +45,39 @@ A RAG service orchestrates semantic retrieval and generation using locally hoste
 ### Core Layers
 
 | Layer | Purpose | Technologies |
-|:------|:---------|:-------------|
-| **Ingest Layer** | Collects and imports research metadata from external and internal sources such as Pure, Scopus, OpenAlex, or institutional repositories. | Python importers, REST APIs, scheduled jobs |
-| **MCP Layer** | Orchestrates validation, normalization, and routing between services; enforces data contracts and workflows. | Prefect / n8n |
-| **API Layer** | Exposes core services for search, linking, and embedding operations. | FastAPI |
-| **Lakehouse (truth + history)** | Stores all CRIS entities with SCD2 history and embeddings (Bronze → Silver → Gold pipeline). | PostgreSQL + pgvector |
-| **Message Bus** | Distributes incremental updates and change events to downstream components. | Redpanda + Debezium |
-| **Full-Text Storage** | Provides hybrid keyword and semantic search for publications, datasets, and projects. | OpenSearch |
-| **Knowledge Graph** | Captures relationships and supports reasoning and discovery across entities. | Neo4j Community |
-| **LLM Server** | Generates embeddings and natural-language reasoning locally. | Ollama / vLLM |
-| **RAG Service** | Performs retrieval-augmented generation by combining vector, keyword, and graph searches. | FastAPI + sentence-transformers |
-| **User Interfaces** | Enables interaction for researchers and analysts through dashboards and chat interfaces. | OpenSearch Dashboards, LibreChat |
+|:------|:--------|:-------------|
+| **Ingest Layer** | Collects and imports research metadata from external and internal sources (Pure, Scopus, OpenAlex, repositories, scrapers). | Python importers, REST APIs, scheduled jobs |
+| **Agents** | Handles automation, event triggers, and human-in-the-loop workflows. | n8n |
+| **MCP Layer** | Bridges the API and internal services via the Model Context Protocol, exposing institutional data and tools to local LLMs. | FastMCP |
+| **API Layer** | Exposes structured CRIS data, search endpoints, and LLM integration. | FastAPI |
+| **Lakehouse (truth + history)** | Stores CRIS entities with SCD2 history and embeddings (Bronze → Silver → Gold pipeline). | PostgreSQL + pgvector, Prefect, Great Expectations |
+| **Message Bus** | Propagates CDC events between Lakehouse, Graph, Search, and LLM components for real-time updates. | Redpanda + Debezium |
+| **LLM Server** | Hosts local models for embeddings and reasoning. | Ollama / vLLM |
+| **Knowledge Graph** | Captures relationships for reasoning and discovery. | Neo4j Community |
+| **Full-Text Storage** | Hybrid keyword and semantic search for documents and metadata. | OpenSearch |
+| **RAG Service** | Combines retrieval from the Lakehouse, Graph, and Search layers for grounded generation. | FastAPI, sentence-transformers, Ollama |
+| **User Interface** | Dashboards and conversational UI for researchers and analysts. | OpenSearch Dashboards, LibreChat |
+
 
 ### Technology Stack Summary
 
 | Component | Purpose | Technology / Tool |
-|:-----------|:---------|:------------------|
-| **Database & Lakehouse** | Primary data store with history (SCD2), vectors, and structured CRIS entities. | **PostgreSQL 16** with **pgvector** extension |
-| **Knowledge Graph** | Relationship modeling and graph reasoning over entities (e.g., authors, projects, outputs). | **Neo4j Community Edition** |
-| **Full-Text & Hybrid Search** | Keyword, BM25, and dense vector search; dashboard interface. | **OpenSearch** + **OpenSearch Dashboards** |
-| **Workflow Orchestration** | ETL, data validation, and scheduled jobs for ingest and sync. | **Prefect** or **n8n** |
-| **API Framework** | Exposes REST/GraphQL endpoints for search, linking, and embeddings. | **FastAPI** |
-| **Message Bus / CDC** | Real-time propagation of changes to search and graph layers. | **Redpanda** + **Debezium** |
-| **Embedding & Retrieval** | Generates and serves embeddings for entities and text chunks. | **sentence-transformers**, **pgvector**, **OpenSearch k-NN** |
-| **RAG Service** | Combines hybrid retrieval (vector + keyword + graph) for grounded generation. | **FastAPI**, **Ollama**, **vLLM** |
-| **LLM Runtime** | Local large language model host for inference and reasoning. | **Ollama** or **vLLM** |
-| **User Interfaces** | Search dashboards, analytics, and conversational assistants. | **OpenSearch Dashboards**, **LibreChat** |
-| **Containerization / Deployment** | Unified, reproducible local environment. | **Docker Compose** |
-| **Programming Language** | Core implementation language for ETL, APIs, and services. | **Python 3.11+** |
-| **Version Control** | Repository and collaboration. | **GitHub** |
+|:-----------|:--------|:------------------|
+| **Database & Lakehouse** | SCD2 entities, vectors, and authoritative CRIS store. | PostgreSQL 16 + pgvector |
+| **Knowledge Graph** | Graph reasoning over entities and relationships. | Neo4j Community |
+| **Full-Text & Hybrid Search** | BM25 + k-NN with dashboards. | OpenSearch + OpenSearch Dashboards |
+| **Orchestration & Validation** | Dataflows, scheduling, and quality checks. | Prefect + Great Expectations |
+| **Automation / Agents** | Event-driven workflows and human-in-loop actions. | n8n |
+| **MCP Layer** | Connects LLMs and local APIs through Model Context Protocol. | FastMCP |
+| **API Framework** | Exposes REST and GraphQL endpoints. | FastAPI |
+| **Message Bus / CDC** | Propagates changes between stores and services. | Redpanda + Debezium |
+| **Embeddings & Retrieval** | Text and metadata embeddings with vector search. | sentence-transformers, pgvector, OpenSearch k-NN |
+| **RAG Service** | Retrieval-augmented generation with grounded responses. | FastAPI, Ollama / vLLM |
+| **LLM Runtime** | Local model execution for embedding and reasoning. | Ollama / vLLM |
+| **User Interfaces** | Search dashboards and chat UI. | OpenSearch Dashboards, LibreChat |
+| **Containerization / Deployment** | Local, reproducible architecture. | Docker Compose |
+| **Programming Language** | Core implementation. | Python 3.11+ |
+| **Version Control** | Repository and collaboration. | GitHub |
 
 ### Flow architecture
 
