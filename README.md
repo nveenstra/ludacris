@@ -81,7 +81,7 @@ A RAG service orchestrates semantic retrieval and generation using locally hoste
 
 ### Flow architecture
 
-Below is the full LudaCRIS architecture, including the RAG service and CDC data flows:
+Below is an example of the RAG service and CDC data flows:
 
 ```mermaid
 flowchart TB
