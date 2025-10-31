@@ -25,6 +25,8 @@ Where earlier CRIS systems focused on metadata aggregation and reporting, LudaCR
 	•	Open Source Only — no proprietary dependencies or cloud lock-in.
 	•	Locally Hosted — fully deployable on-premises for institutional sovereignty.
 	•	Extensible and Adaptable — modular architecture that grows with your needs.
+	•	Chat only interface — reduce the overhead of front-end development changes and focus on AI interaction for queries, visualisations and data import- and export.
+	
 
 ### Architecture Overview
 
@@ -78,6 +80,21 @@ A RAG service orchestrates semantic retrieval and generation using locally hoste
 | **Containerization / Deployment** | Local, reproducible architecture. | Docker Compose |
 | **Programming Language** | Core implementation. | Python 3.11+ |
 | **Version Control** | Repository and collaboration. | GitHub |
+
+
+### Chat only interface
+
+Developing a modern frontend for this system would mean considerable development time and maintenance in order to adapt to new standards and functionality. At the same time users are rapidly adapting to using AI bot chats to retrieve information. So rather than going into the complexity of designing and maintaining a user interface suited for multiple platforms and devices, LudaCRIS relies on a chat interface that can be used for all tasks required. 
+
+| Capability | Why It Matters in LudaCRIS |
+|:------------|:---------------------------|
+| **Conversational interface** | Enables natural-language access to research data through the RAG service. |
+| **File upload / PDF ingestion** | Allows users to add new publications or datasets directly via chat, automatically extracting and storing metadata in the CRIS. |
+| **Structured query generation** | Translates natural-language questions into SQL or graph queries to explore data programmatically. |
+| **Visualization** | Displays dynamic co-author graphs, project networks, and analytical trends inside the chat interface. |
+| **Tool calling / API integration** | Lets the chat interface trigger backend actions such as “create record” or “update metadata.” |
+| **Authentication / roles** | Restricts sensitive actions to authorized users (e.g., librarians, admins). |
+| **Local + open source** | Ensures full institutional data sovereignty and offline capability—no cloud dependencies. |
 
 ### Flow architecture
 
