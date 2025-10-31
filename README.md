@@ -133,7 +133,7 @@ flowchart TB
 
     subgraph UI["User interface"]
       OSD["OpenSearch Dashboards"]
-      LC["LibreChat"]
+      LC["Open WebUI"]
     end
 
     subgraph RAGBOX["RAG service"]
