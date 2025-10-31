@@ -1,6 +1,7 @@
 # ludacris
 Open AI ready CRIS system 
 
+![Ludacris architecture](https://github.com/nveenstra/ludacris/blob/main/Ludacris.png)
 
 
 ```mermaid
