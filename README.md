@@ -1,5 +1,5 @@
 # ludacris
-Open AI ready CRIS system 
+Open, AI first CRIS system 
 
 ![Ludacris architecture](https://github.com/nveenstra/ludacris/blob/main/Ludacris.png)
 
