@@ -1,0 +1,213 @@
+# Save as: docker-compose.yml  (no "version" key needed)
+networks:
+  backend:
+    driver: bridge
+
+services:
+  # ===== Core DB (CRIS + vectors) =====
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: luda
+      POSTGRES_PASSWORD: luda
+      POSTGRES_DB: ludacris
+      TZ: Europe/Amsterdam
+    ports: ["5432:5432"]
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      # Uncomment to auto-init your schema on first run:
+      # - ./data/postgres/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U luda -d ludacris"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [backend]
+
+  # ===== Knowledge graph =====
+  neo4j:
+    image: neo4j:5.23.0-community
+    environment:
+      NEO4J_AUTH: neo4j/ludacr1s!
+    ports: ["7474:7474","7687:7687"]
+    volumes:
+      - ./data/neo4j:/data
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep java >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ===== Full-text / hybrid search =====
+  opensearch:
+    image: opensearchproject/opensearch:2.13.0
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    ports: ["9200:9200","9600:9600"]
+    volumes:
+      - ./data/opensearch:/usr/share/opensearch/data
+      - ./data/opensearch-logs:/usr/share/opensearch/logs
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9200 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    networks: [backend]
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.13.0
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+    ports: ["5601:5601"]
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    networks: [backend]
+
+  # ===== Message bus (Kafka API) & CDC =====
+  redpanda:
+    image: redpandadata/redpanda:v24.2.6
+    command:
+      - redpanda start
+      - --overprovisioned
+      - --smp=1
+      - --memory=1G
+      - --reserve-memory=0M
+      - --node-id=0
+      - --check=false
+      - --set redpanda.auto_create_topics_enabled=true
+    ports:
+      - "9092:9092"   # Kafka API
+      - "9644:9644"   # Admin API
+    volumes:
+      - ./data/redpanda:/var/lib/redpanda/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:9644/v1/status/ready >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    networks: [backend]
+
+  debezium:
+    platform: linux/amd64                 # M-series Macs need this
+    image: quay.io/debezium/connect:2.6.2.Final
+    environment:
+      BOOTSTRAP_SERVERS: redpanda:9092
+      GROUP_ID: ludacris-connect
+      CONFIG_STORAGE_TOPIC: _connect_configs
+      OFFSET_STORAGE_TOPIC: _connect_offsets
+      STATUS_STORAGE_TOPIC: _connect_status
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      REST_ADVERTISED_HOST_NAME: debezium
+      TZ: Europe/Amsterdam
+    ports: ["8083:8083"]
+    depends_on:
+      redpanda: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+    networks: [backend]
+
+  # ===== LLM runtime & chat UI =====
+  ollama:
+    image: ollama/ollama:0.3.14
+    volumes:
+      - ./models:/root/.ollama
+    ports: ["11434:11434"]
+    healthcheck:
+      test: ["CMD-SHELL", "ps aux | grep -q '[o]llama'"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_NAME: "LudaCRIS Assistant"
+    volumes:
+      - ./data/openwebui:/app/backend/data
+    ports: ["3000:8080"]
+    depends_on:
+      ollama: { condition: service_healthy }
+    networks: [backend]
+
+  # ===== Orchestration & automations =====
+  prefect:
+    image: prefecthq/prefect:2.16.9-python3.11
+    command: ["prefect", "orion", "start", "--host", "0.0.0.0"]
+    environment:
+      PREFECT_API_URL: "http://localhost:4200/api"
+      TZ: Europe/Amsterdam
+    ports: ["4200:4200"]
+    volumes:
+      - ./data/prefect:/root/.prefect
+    networks: [backend]
+
+  n8n:
+    image: n8nio/n8n:1.71.0
+    environment:
+      N8N_HOST: "localhost"
+      N8N_PORT: 5678
+      N8N_PROTOCOL: "http"
+      GENERIC_TIMEZONE: "Europe/Amsterdam"
+    ports: ["5678:5678"]
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+    networks: [backend]
+
+  # ===== LudaCRIS API (your FastAPI app) =====
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    environment:
+      PG_DSN: postgresql://luda:luda@postgres:5432/ludacris
+      OS_URL: https://opensearch:9200
+      OS_USER: admin
+      OS_PASS: ludaAdmin!
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASS: luda
+      CAS_REPO: /data/repo
+      TZ: Europe/Amsterdam
+    volumes:
+      - ./data/repo:/data/repo          # CAS PDF repository
+    ports: ["8081:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+      neo4j: { condition: service_healthy }
+    networks: [backend]
+
+  # ===== RAG Service (retrieval + generation) =====
+  rag-service:
+    build:
+      context: ./rag-service
+      dockerfile: Dockerfile
+    environment:
+      PG_DSN: postgresql://luda:luda@postgres:5432/ludacris
+      OS_URL: https://opensearch:9200
+      OS_USER: admin
+      OS_PASS: ludaAdmin!
+      NEO4J_URI: bolt://neo4j:7687
+      NEO4J_USER: neo4j
+      NEO4J_PASS: luda
+      OLLAMA_HOST: http://ollama:11434
+      CAS_REPO: /data/repo
+      KAFKA_BROKERS: redpanda:9092
+      CDC_TOPIC: ludacris.gold.changes
+      TZ: Europe/Amsterdam
+    volumes:
+      - ./data/repo:/data/repo
+    ports: ["8082:8080"]
+    depends_on:
+      postgres: { condition: service_healthy }
+      opensearch: { condition: service_healthy }
+      neo4j: { condition: service_healthy }
+      ollama: { condition: service_healthy }
+      redpanda: { condition: service_healthy }
+    networks: [backend]

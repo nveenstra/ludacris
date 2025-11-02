@@ -1,0 +1,8 @@
+# LudaCRIS data and model directories (heavy, local)
+data/
+models/
+__pycache__/
+*.pyc
+.env
+.env.local
+.ipynb_checkpoints/

@@ -1,0 +1,8 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.0
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.35
+opensearch-py==2.6.0
+neo4j==5.25.0
+sentence-transformers==3.0.1
+numpy==2.1.2
